@@ -1,6 +1,7 @@
 
 import Link from "next/link";
 import { LanguageSelector } from "./LanguageSelector";
+import { Button } from "@/components/ui/button";
 
 export default function Header() {
   return (
@@ -12,24 +13,24 @@ export default function Header() {
         <nav>
           <ul className="flex space-x-6">
             <li>
-              <Link href="/blog" className="hover:text-accent">
-                Blog
-              </Link>
+              <Button asChild variant="ghost">
+                <Link href="/blog">Blog</Link>
+              </Button>
             </li>
             <li>
-              <Link href="/projects" className="hover:text-accent">
-                Projects
-              </Link>
+              <Button asChild variant="ghost">
+                <Link href="/projects">Projects</Link>
+              </Button>
             </li>
             <li>
-              <Link href="/about" className="hover:text-accent">
-                About
-              </Link>
+              <Button asChild variant="ghost">
+                <Link href="/about">About</Link>
+              </Button>
             </li>
             <li>
-              <Link href="/contact" className="hover:text-accent">
-                Contact
-              </Link>
+              <Button asChild variant="ghost">
+                <Link href="/contact">Contact</Link>
+              </Button>
             </li>
             <li>
               <LanguageSelector />
