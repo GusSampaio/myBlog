@@ -1,7 +1,13 @@
-
+'use client';
 import Link from "next/link";
 import { LanguageSelector } from "./LanguageSelector";
 import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
+
+export function getPathToHeader() {
+  const pathname = usePathname();
+  return pathname;
+};
 
 export default function Header() {
   return (
@@ -19,21 +25,31 @@ export default function Header() {
             </li>
             <li>
               <Button asChild variant="ghost">
-                <Link href="/projects">Projects</Link>
+                <Link href="/projects">
+                {getPathToHeader().startsWith('/pt') 
+                  ? <span>Projetos</span> 
+                  : <span>Projects</span>}
+                </Link>
               </Button>
             </li>
             <li>
               <Button asChild variant="ghost">
-                <Link href="/about">About</Link>
+                <Link href="/about">
+                {getPathToHeader().startsWith('/pt') 
+                  ? <span>Sobre</span> 
+                  : <span>About</span>}</Link>
               </Button>
             </li>
             <li>
               <Button asChild variant="ghost">
-                <Link href="/contact">Contact</Link>
+                <Link href="/contact">
+                {getPathToHeader().startsWith('/pt') 
+                  ? <span>Contato</span> 
+                  : <span>Contact</span>}</Link>
               </Button>
             </li>
             <li>
-              <LanguageSelector />
+              <LanguageSelector/>
             </li>
           </ul>
         </nav>

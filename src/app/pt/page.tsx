@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { LanguageSelector } from "@/components/LanguageSelector";
 import { translations } from "@/lib/translations";
 
 export default function HomePT() {
