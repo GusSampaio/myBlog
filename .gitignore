@@ -1,4 +1,6 @@
 # dependencies
+/src/venv
+/src/backend/__pycache__
 /node_modules
 /.pnp
 .pnp.*

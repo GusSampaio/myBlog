@@ -1,7 +1,7 @@
 export const translations = {
   en: {
-    title: "Hi, I'm Gustavo",
-    tagline: "Here I show my knowledge in Machine Learning, Deep Learning, and Data Science",
+    title: "Hey, I am Gustavo :)",
+    tagline: "Here I show my knowledge in Machine Learning, Data Science and whatever else I feel like sharing",
     aboutMe: {
       title: "About Me",
       description: "A brief introduction about my background and passion.",
@@ -10,15 +10,38 @@ export const translations = {
       title: "Skills",
       description: "Highlighting my key skills and technologies.",
     },
+    common: {
+      language: "Language"
+    },
+    navigation: {
+      blog: "Blog",
+      projects: "Projects",
+      about: {
+        title:"About",
+        desc:"I'm Gustavo Sampaio, a data scientist and PhD candidate at the University of São Paulo (USP), focusing on natural language. Today I work at Albert Einstein Hospital, where I study models that combine text and images to help with technology projects focused on public health.\n I enjoy combining teaching, research, and scientific dissemination, always with an eye on accessibility and social impact.",
+      },
+      contact: {
+        title:"Contact", 
+        desc:"Ping me using these channels"
+      },
+      home: "Home"
+    },
     explore: {
-      title: "Explore My Work",
-      blog: "Read My Blog",
-      projects: "View My Projects",
+      title: "Take a look at what I've been up to",
+      blog: "Blog",
+      projects: "Projects"
+    },
+    education:{
+      title:"Education",
+      desc:"PhD candidate at University of São Paulo - Natural Language Processing",
+    },
+    experience:{
+      title:"Experience"
     }
   },
   pt: {
-    title: "Olá, eu sou Gustavo",
-    tagline: "Aqui mostro meu conhecimento em Machine Learning, Deep Learning e Ciência de Dados",
+    title: "Prazer, Gustavo :)",
+    tagline: "Aqui mostro meu conhecimento em Machine Learning, Ciência de Dados e o que mais der vontade de compartilhar",
     aboutMe: {
       title: "Sobre Mim",
       description: "Uma breve introdução sobre minha formação e paixões.",
@@ -27,10 +50,33 @@ export const translations = {
       title: "Habilidades",
       description: "Destacando minhas principais habilidades e tecnologias.",
     },
+    common: {
+      language: "Idioma"
+    },
+    navigation: {
+      blog: "Blog",
+      projects: "Projetos",
+      about: {
+        title: "Sobre",
+        desc: "Sou Gustavo Sampaio, cientista de dados e estudante de doutorado na Universidade de São Paulo (USP), com foco em linguagem natural. Hoje trabalho no Hospital Albert Einstein, onde estudo modelos que combinam texto e imagem para ajudar em projetos de tecnologia voltados à saúde pública.\n Gosto de misturar ensino, pesquisa e divulgação científica, sempre com um olhar para acessibilidade e impacto social."
+      },      
+      contact: {
+        title:"Contato",
+        desc: "Entre em contato comigo através dos seguintes canais:",
+      },
+      home: "Início",
+    },
     explore: {
-      title: "Explore Meu Trabalho",
-      blog: "Leia Meu Blog",
-      projects: "Veja Meus Projetos",
+      title: "Dê uma olhada no que tenho feito",
+      blog: "Blog",
+      projects: "Projetos"
+    },
+    education:{
+      title: "Educação",
+      desc:"Estudante de doutorado em Processamento de Linguagem Natural na Universidade de São Paulo (USP)",
+    },
+    experience:{
+      title: "Experiência"
     }
   }
 }; 

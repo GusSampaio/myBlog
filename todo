@@ -1,0 +1,6 @@
+- Puxar post de projetos de outro dataset no notion
+- Tirar páginas que não fazem mais parte do projeto (fora de lang)
+- Melhorar estilização dos blocos de código
+- Implementar barra de busca por RAG
+- Corrigir bug de params.slug
+- Otimizações de lazy loading de subposts e cache
