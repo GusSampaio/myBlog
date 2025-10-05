@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Globe } from "lucide-react";
+import { Globe, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 
 export function LanguageSelector() {
@@ -16,9 +16,10 @@ export function LanguageSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex items-center gap-2">
+        <Button variant="ghost" className="flex items-center space-x-2">
           <Globe className="h-5 w-5" />
-          <span className="text-base">{translations.common.language}</span>
+          <span className="">{translations.common.language}</span>
+          <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

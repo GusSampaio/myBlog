@@ -40,8 +40,8 @@ export default function Header() {
                 </Button>
               </li>
             ))}
-            <li className="pl-2">
-              <LanguageSelector />
+            <li>
+              <LanguageSelector/>
             </li>
           </ul>
         </nav>

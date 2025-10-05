@@ -24,7 +24,6 @@ export default function ClientHomePage({ locale }: { locale: string }) {
         const data = await res.json();
         setAnswer(data.answer);
         setSources(data.sources || []);
-        console.log(locale);
     }
 
     return (
@@ -61,7 +60,7 @@ export default function ClientHomePage({ locale }: { locale: string }) {
                 </div>
             </section>
 
-            {/* Nova search bar */}
+            {/* Query input */}
             <section className="mt-12 flex justify-center">
                 <div className="flex w-full sm:w-[500px] bg-background border border-input rounded-full overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-ring transition">
                     <input
