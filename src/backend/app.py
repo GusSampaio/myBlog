@@ -10,6 +10,12 @@ import spacy
 import os
 import re
 
+import time
+import asyncio
+from collections import defaultdict
+from fastapi import Request, Depends, HTTPException
+from starlette.status import HTTP_429_TOO_MANY_REQUESTS
+
 # --- Configurações ---
 # Carrega variáveis de ambiente de forma segura
 dotenv_path = "../../.env"
@@ -29,6 +35,47 @@ VECTOR_INDEX_EN = 'vector_index_en'
 # Modelos
 EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 CHAT_MODEL = "mistral-small"
+
+
+# --- Rate Limiter ---
+request_tracker = defaultdict(lambda: {"count": 0, "last_request_time": 0.0})
+lock = asyncio.Lock()
+
+FREE_REQUESTS_LIMIT = 3   # Primeiros 3 requests são instantâneos
+RESET_TIMEOUT_SECONDS = 60 * 5 # Reseta o contador de um IP após 5 minutos de inatividade
+MAX_WAIT_SECONDS = 30
+
+async def rate_limiter(request: Request):
+    """
+    Esta dependência verifica o IP do cliente, conta seus requests recentes
+    e aplica um atraso exponencial se o limite for ultrapassado.
+    """
+    ip = request.client.host
+    current_time = time.monotonic() # Usar time.monotonic para medir intervalos de tempo
+
+    async with lock:
+        # Verifica se o último request do IP foi há muito tempo
+        if current_time - request_tracker[ip]["last_request_time"] > RESET_TIMEOUT_SECONDS:
+            request_tracker[ip]["count"] = 0 # Reseta o contador
+
+        # Incrementa o contador e atualiza o tempo do último request
+        request_tracker[ip]["count"] += 1
+        request_tracker[ip]["last_request_time"] = current_time
+        request_count = request_tracker[ip]["count"]
+
+    # Calcula o atraso FORA do lock para não prender outros requests
+    delay = 0
+    if request_count > FREE_REQUESTS_LIMIT:
+        # A fórmula: 2^(request_atual - limite)
+        exponent = request_count - FREE_REQUESTS_LIMIT
+        delay = 2 ** exponent
+
+    # Aplica o teto máximo de espera
+    delay = min(delay, MAX_WAIT_SECONDS)
+
+    if delay > 0:
+        print(f"RATE LIMITER: IP {ip} no request #{request_count}. Aguardando {delay:.2f} segundos.")
+        await asyncio.sleep(delay)
 
 # --- Inicialização dos Clientes e Modelos ---
 app = FastAPI()
@@ -92,7 +139,7 @@ class Query(BaseModel):
     query: str
     lang: str
 
-@app.post("/search")
+@app.post("/search", dependencies=[Depends(rate_limiter)])
 async def search(q: Query):
     cleaned_query = clean_query(q.query, lang=q.lang)
     if cleaned_query == "":
