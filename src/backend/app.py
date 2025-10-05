@@ -142,8 +142,6 @@ class Query(BaseModel):
 @app.post("/search", dependencies=[Depends(rate_limiter)])
 async def search(q: Query):
     cleaned_query = clean_query(q.query, lang=q.lang)
-    if cleaned_query == "":
-        return {"answer": ""}
 
     results = []
     if q.lang == "pt":
@@ -157,7 +155,7 @@ async def search(q: Query):
         if (score >= threshold) and (doc.metadata.get("lang") == q.lang)
     ]
 
-    if not filtered_results:
+    if cleaned_query == "" or not filtered_results:
         with open(f"prompts/non_related_{q.lang}.txt", "r", encoding="utf-8") as file:
             non_related_prompt = file.read()
             return {"answer": non_related_prompt}
