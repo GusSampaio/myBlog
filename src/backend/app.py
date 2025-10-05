@@ -2,7 +2,8 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from pymongo import MongoClient
 from langchain_mistralai import ChatMistralAI
-from langchain_community.embeddings import HuggingFaceEmbeddings
+# from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain_mongodb import MongoDBAtlasVectorSearch
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
@@ -50,8 +51,8 @@ vector_store_en = MongoDBAtlasVectorSearch(
     type="vectorSearch",
 )
 
+# Configuração do chat
 chat = ChatMistralAI(
-    #model="mistral-large-latest",
     model="mistral-small",
     api_key=os.environ["MISTRAL_API_KEY"],
 )
@@ -64,14 +65,16 @@ nlp_en = spacy.load("en_core_web_sm")
 nlp_pt = spacy.load("pt_core_news_sm")
 
 def clean_title(title: str) -> str:
+    """Remove numeração do início dos títulos."""
     return re.sub(r'^\d+\.\s*', '', title).strip()
 
 def clean_query(query: str, lang: str = "en") -> str:
+    """Limpa e processa a query para melhorar a busca."""
     nlp = nlp_en if lang == "en" else nlp_pt
     doc = nlp(query)
     tokens = [
         token.lemma_ for token in doc
-        if not token.is_stop and token.pos_ in ("NOUN", "ADJ")
+        if not token.is_stop and token.pos_ in ("NOUN", "ADJ", "VERB")
     ]
     return " ".join(tokens)
 
