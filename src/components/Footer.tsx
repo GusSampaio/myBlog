@@ -4,10 +4,7 @@ export default function Footer() {
   return (
     <footer className="w-full shadow-inner bg-secondary py-4">
       <div className="container mx-auto text-center">
-        <p className="text-sm">
-          © {new Date().getFullYear()} My portfolio. All rights reserved.
-        </p>
-        <div className="mt-4 flex justify-center space-x-4">
+        <div className="flex justify-center space-x-4">
           <a 
             href="https://www.linkedin.com/in/gussampaio/"
             target="_blank"
