@@ -41,8 +41,8 @@ CHAT_MODEL = "mistral-small"
 request_tracker = defaultdict(lambda: {"count": 0, "last_request_time": 0.0})
 lock = asyncio.Lock()
 
-FREE_REQUESTS_LIMIT = 3   # Primeiros 3 requests são instantâneos
-RESET_TIMEOUT_SECONDS = 60 * 5 # Reseta o contador de um IP após 5 minutos de inatividade
+FREE_REQUESTS_LIMIT = 5   # Primeiros 5 requests são instantâneos
+RESET_TIMEOUT_SECONDS = 60 * 3 # Reseta o contador de um IP após 3 minutos de inatividade
 MAX_WAIT_SECONDS = 30
 
 async def rate_limiter(request: Request):
