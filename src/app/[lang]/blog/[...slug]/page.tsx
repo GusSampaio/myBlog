@@ -17,7 +17,7 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import BlogContentWrapper from '@/components/BlogContentWrapper';
 import BlogPageLayout from '@/components/BlogPageLayout';
 import { ChevronRight, Home, BookOpen } from 'lucide-react';
-import { parseYamlFrontmatter } from '@/utils/posts';
+import { parseYamlFrontmatter } from '@/lib/posts';
 import { type Metadata, type ResolvingMetadata } from 'next';
 
 

@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { translations } from "@/lib/translations";
 import path from 'path';
-import { getSubpages } from '@/utils/getSubpages';
+import { getSubpages } from '@/lib/getSubpages';
 import React from 'react';
 
 interface BlogPageProps {
