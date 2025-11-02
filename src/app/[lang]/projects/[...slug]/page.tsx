@@ -14,8 +14,8 @@ import { translations } from "@/lib/translations";
 import 'katex/dist/katex.min.css';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
-import BlogContentWrapper from '@/components/BlogContentWrapper';
-import BlogPageLayout from '@/components/BlogPageLayout';
+import BlogContentWrapper from '@/components/blog/BlogContentWrapper';
+import BlogPageLayout from '@/components/blog/BlogPageLayout';
 import { ChevronRight, Home, BookOpen } from 'lucide-react';
 import { parseYamlFrontmatter } from '@/lib/posts';
 
