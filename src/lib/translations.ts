@@ -11,7 +11,8 @@ export const translations = {
       description: "Highlighting my key skills and technologies.",
     },
     common: {
-      language: "Language"
+      language: "Language",
+      sources: "Sources",
     },
     navigation: {
       blog: "Blog",
@@ -37,7 +38,11 @@ export const translations = {
     },
     experience:{
       title:"Experience"
-    }
+    },
+    funcs:{
+      search:"Search",
+      searching:"Searching"
+    }    
   },
   pt: {
     title: "Prazer, Gustavo :)",
@@ -51,7 +56,8 @@ export const translations = {
       description: "Destacando minhas principais habilidades e tecnologias.",
     },
     common: {
-      language: "Idioma"
+      language: "Idioma",
+      sources: "Resultados",
     },
     navigation: {
       blog: "Blog",
@@ -77,6 +83,10 @@ export const translations = {
     },
     experience:{
       title: "Experiência"
-    }
+    },
+    funcs:{
+      search:"Pesquisar",
+      searching:"Pesquisando"
+    } 
   }
 }; 

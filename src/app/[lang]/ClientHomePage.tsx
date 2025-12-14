@@ -46,7 +46,7 @@ const extendedTranslations = {
 
 export default function ClientHomePage({ locale }: { locale: string }) {
     // Usando as traduções estendidas
-    const t = extendedTranslations[locale];
+    const t = extendedTranslations[locale as keyof typeof extendedTranslations];
 
     const [query, setQuery] = React.useState("");
     const [answer, setAnswer] = React.useState("");

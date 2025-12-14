@@ -6,9 +6,7 @@ import { getSubpages } from '@/lib/getSubpages';
 import React from 'react';
 
 interface BlogPageProps {
-  params: Promise<{
-    lang: string;
-  }>;
+  params: Promise<{ lang: string;}>;
 }
 
 export default async function BlogPage({ params }: BlogPageProps) {

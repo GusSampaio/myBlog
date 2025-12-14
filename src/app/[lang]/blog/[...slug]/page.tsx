@@ -102,12 +102,14 @@ async function getSubcontents(slugArr: string[], lang: string): Promise<{ slug: 
 }
 
 type Props = {
-  params: { lang: string; slug?: string[] }
+  params: Promise<{ lang: string; slug?: string[] }>
 };
 
 export default async function BlogSubPostPage({ params }: Props) {
-  const lang = params.lang;
-  const slugArr = params.slug ?? [];
+  const resolvedParams = await params;
+
+  const lang = resolvedParams.lang;
+  const slugArr = resolvedParams.slug ?? [];
   if (!slugArr.length) return notFound();
 
 
@@ -131,7 +133,6 @@ export default async function BlogSubPostPage({ params }: Props) {
 
   // Processar o markdown com suporte a LaTeX
   let htmlContent;
-  console.log('Iniciando processamento do conteúdo');
 
   try {
     htmlContent = await unified()

@@ -4,6 +4,8 @@ import { useRouter, usePathname } from 'next/navigation';
 import { translations } from '@/lib/translations';
 import { useMemo } from 'react';
 
+type Locale = 'pt' | 'en';
+
 export function useLanguage() {
   const router = useRouter();
   const pathname = usePathname();
@@ -18,7 +20,7 @@ export function useLanguage() {
     return 'pt'; // idioma padrão
   }, [pathname]);
   
-  const translationsForLocale = useMemo(() => translations[currentLocale], [currentLocale]);
+  const translationsForLocale = useMemo(() => translations[currentLocale as keyof typeof translations], [currentLocale]);
   
   const changeLanguage = (locale: Locale) => {
     // Se já estamos no idioma desejado, não fazer nada

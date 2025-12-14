@@ -402,22 +402,25 @@ async function getBlocksRecursive(pageId: string, path: string[], pageSlug: stri
 
         for (let i = 0; i < tableRows.results.length; i++) {
           const row = tableRows.results[i];
-          if (row.type === 'table_row') {
-            const cells = row.table_row.cells.map((cell: any[]) =>
-              cell.map((t: any) => t.plain_text).join('')
-            );
-        
-            if (i === 0 && hasColumnHeader) {
-              tableMd += ` <thead>\n  <tr>\n`;
-              tableMd += `   <th>${cells.join('</th>\n   <th>')}</th>\n`;
-              tableMd += `  </tr>\n </thead>\n`;
-            } else {
-              if ((i === 0 && !hasColumnHeader) || (i === 1 && hasColumnHeader)) {
-                tableMd += ` <tbody>\n`;
+          if ('type' in row && row.type === 'table_row'){
+
+            if (row.type === 'table_row') {
+              const cells = row.table_row.cells.map((cell: any[]) =>
+                cell.map((t: any) => t.plain_text).join('')
+              );
+          
+              if (i === 0 && hasColumnHeader) {
+                tableMd += ` <thead>\n  <tr>\n`;
+                tableMd += `   <th>${cells.join('</th>\n   <th>')}</th>\n`;
+                tableMd += `  </tr>\n </thead>\n`;
+              } else {
+                if ((i === 0 && !hasColumnHeader) || (i === 1 && hasColumnHeader)) {
+                  tableMd += ` <tbody>\n`;
+                }
+                tableMd += `  <tr>\n`;
+                tableMd += `   <td>${cells.join('</td>\n   <td>')}</td>\n`;
+                tableMd += `  </tr>\n`;
               }
-              tableMd += `  <tr>\n`;
-              tableMd += `   <td>${cells.join('</td>\n   <td>')}</td>\n`;
-              tableMd += `  </tr>\n`;
             }
           }
         }

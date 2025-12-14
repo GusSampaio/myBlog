@@ -100,12 +100,13 @@ async function getSubcontents(slugArr: string[], lang: string): Promise<{ slug: 
 }
 
 type Props = {
-  params: { lang: string; slug?: string[] }
+  params: Promise<{ lang: string; slug?: string[] }>
 };
 
 export default async function BlogSubPostPage({ params }: Props) {
-  const lang = params.lang;
-  const slugArr = params.slug ?? [];
+  const resolvedparams = await params;
+  const lang = resolvedparams.lang;
+  const slugArr = resolvedparams.slug ?? [];
   if (!slugArr.length) return notFound();
 
 

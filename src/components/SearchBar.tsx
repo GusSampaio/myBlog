@@ -64,14 +64,13 @@ export function SearchBar({ language }: SearchBarProps) {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <Input
               type="text"
-              placeholder={translations.pages.home.search.placeholder}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-10"
             />
           </div>
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? translations.common.searching : translations.common.search}
+            {isLoading ? translations.funcs.searching : translations.funcs.searching}
           </Button>
         </form>
       </Card>
