@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Depends, HTTPException
 from pydantic import BaseModel
 from pymongo import MongoClient
 from langchain_mistralai import ChatMistralAI
@@ -9,23 +9,27 @@ from fastapi.middleware.cors import CORSMiddleware
 import spacy
 import os
 import re
-from pathlib import Path
 import time
 import asyncio
 from collections import defaultdict
-from fastapi import Request, Depends, HTTPException
-from starlette.status import HTTP_429_TOO_MANY_REQUESTS
+from pathlib import Path
 
-# --- Configurações ---
-# Carrega variáveis de ambiente de forma segura
-BASE_DIR = Path(__file__).parent.parent.parent
-dotenv_path = BASE_DIR / ".env"
-load_dotenv(dotenv_path=str(dotenv_path))
+# --- Configurações de Ambiente ---
+# Detecta a pasta onde este arquivo app.py está rodando
+CURRENT_DIR = Path(__file__).parent
 
-# Chaves de API e Conexões
-MONGODB_URI = os.environ["MONGODB_URI"]
-MISTRAL_API_KEY = os.environ["MISTRAL_API_KEY"]
-HUGGINGFACE_API_KEY = os.environ["HF_TOKEN"]
+# Tenta carregar .env apenas se existir (Local), na Vercel as vars vêm do painel
+dotenv_path = CURRENT_DIR.parent.parent / ".env"
+if dotenv_path.exists():
+    load_dotenv(dotenv_path=str(dotenv_path))
+
+# Chaves de API
+MONGODB_URI = os.environ.get("MONGODB_URI")
+MISTRAL_API_KEY = os.environ.get("MISTRAL_API_KEY")
+HUGGINGFACE_API_KEY = os.environ.get("HF_TOKEN")
+
+if not all([MONGODB_URI, MISTRAL_API_KEY, HUGGINGFACE_API_KEY]):
+    print("AVISO: Algumas variáveis de ambiente não foram encontradas.")
 
 # Configurações do MongoDB
 MONGODB_DATABASE = "minha_database"
@@ -37,97 +41,94 @@ VECTOR_INDEX_EN = 'vector_index_en'
 EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 CHAT_MODEL = "mistral-small"
 
+# --- Inicialização do FastAPI ---
+# root_path ajuda o FastAPI a entender que ele está rodando atrás de um proxy (/api/py)
+app = FastAPI(docs_url="/docs", openapi_url="/openapi.json", root_path="/api/py")
 
-# --- Rate Limiter ---
-request_tracker = defaultdict(lambda: {"count": 0, "last_request_time": 0.0})
-lock = asyncio.Lock()
-
-FREE_REQUESTS_LIMIT = 5   # Primeiros 5 requests são instantâneos
-RESET_TIMEOUT_SECONDS = 60 * 3 # Reseta o contador de um IP após 3 minutos de inatividade
-MAX_WAIT_SECONDS = 30
-
-async def rate_limiter(request: Request):
-    """
-    Esta dependência verifica o IP do cliente, conta seus requests recentes
-    e aplica um atraso exponencial se o limite for ultrapassado.
-    """
-    ip = request.client.host
-    current_time = time.monotonic() # Usar time.monotonic para medir intervalos de tempo
-
-    async with lock:
-        # Verifica se o último request do IP foi há muito tempo
-        if current_time - request_tracker[ip]["last_request_time"] > RESET_TIMEOUT_SECONDS:
-            request_tracker[ip]["count"] = 0 # Reseta o contador
-
-        # Incrementa o contador e atualiza o tempo do último request
-        request_tracker[ip]["count"] += 1
-        request_tracker[ip]["last_request_time"] = current_time
-        request_count = request_tracker[ip]["count"]
-
-    # Calcula o atraso FORA do lock para não prender outros requests
-    delay = 0
-    if request_count > FREE_REQUESTS_LIMIT:
-        # A fórmula: 2^(request_atual - limite)
-        exponent = request_count - FREE_REQUESTS_LIMIT
-        delay = 2 ** exponent
-
-    # Aplica o teto máximo de espera
-    delay = min(delay, MAX_WAIT_SECONDS)
-
-    if delay > 0:
-        print(f"RATE LIMITER: IP {ip} no request #{request_count}. Aguardando {delay:.2f} segundos.")
-        await asyncio.sleep(delay)
-
-# --- Inicialização dos Clientes e Modelos ---
-app = FastAPI()
-
-# Configuração CORS
+# Configuração CORS (Permitindo tudo para evitar bloqueios na Vercel)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:9002"],
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Cliente MongoDB
-client = MongoClient(MONGODB_URI)
-collection = client[MONGODB_DATABASE][MONGODB_COLLECTION]
+# --- Rate Limiter (Nota: Em Serverless, isso reseta a cada cold boot) ---
+request_tracker = defaultdict(lambda: {"count": 0, "last_request_time": 0.0})
+lock = asyncio.Lock()
 
-## Instancia o gerador de embeddings usando a API de Inferência
-embedding_generator = HuggingFaceEndpointEmbeddings(
-    huggingfacehub_api_token=HUGGINGFACE_API_KEY,
-    model=EMBEDDING_MODEL,
-    task="feature-extraction",
-)
+FREE_REQUESTS_LIMIT = 5
+RESET_TIMEOUT_SECONDS = 60 * 3
+MAX_WAIT_SECONDS = 30
 
-# Vector Stores
-vector_store_pt = MongoDBAtlasVectorSearch(
-    collection=collection,
-    embedding=embedding_generator,
-    index_name=VECTOR_INDEX_PT,
-)
+async def rate_limiter(request: Request):
+    ip = request.client.host or "unknown"
+    current_time = time.monotonic()
 
-vector_store_en = MongoDBAtlasVectorSearch(
-    collection=collection,
-    embedding=embedding_generator,
-    index_name=VECTOR_INDEX_EN,
-)
+    async with lock:
+        if current_time - request_tracker[ip]["last_request_time"] > RESET_TIMEOUT_SECONDS:
+            request_tracker[ip]["count"] = 0
 
-# Modelo de Chat
-chat = ChatMistralAI(model=CHAT_MODEL, api_key=MISTRAL_API_KEY)
+        request_tracker[ip]["count"] += 1
+        request_tracker[ip]["last_request_time"] = current_time
+        request_count = request_tracker[ip]["count"]
 
-# Carregamento dos modelos Spacy
-nlp_en = spacy.load("en_core_web_sm")
-nlp_pt = spacy.load("pt_core_news_sm")
+    delay = 0
+    if request_count > FREE_REQUESTS_LIMIT:
+        exponent = request_count - FREE_REQUESTS_LIMIT
+        delay = min(2 ** exponent, MAX_WAIT_SECONDS)
+
+    if delay > 0:
+        print(f"RATE LIMITER: IP {ip} aguardando {delay:.2f}s")
+        await asyncio.sleep(delay)
+
+# --- Conexões Globais ---
+# Em serverless, conexões fora das funções podem ser reutilizadas se o container estiver "quente"
+try:
+    client = MongoClient(MONGODB_URI)
+    collection = client[MONGODB_DATABASE][MONGODB_COLLECTION]
+    
+    embedding_generator = HuggingFaceEndpointEmbeddings(
+        huggingfacehub_api_token=HUGGINGFACE_API_KEY,
+        model=EMBEDDING_MODEL,
+        task="feature-extraction",
+    )
+
+    vector_store_pt = MongoDBAtlasVectorSearch(
+        collection=collection,
+        embedding=embedding_generator,
+        index_name=VECTOR_INDEX_PT,
+    )
+
+    vector_store_en = MongoDBAtlasVectorSearch(
+        collection=collection,
+        embedding=embedding_generator,
+        index_name=VECTOR_INDEX_EN,
+    )
+
+    chat = ChatMistralAI(model=CHAT_MODEL, api_key=MISTRAL_API_KEY)
+except Exception as e:
+    print(f"Erro na inicialização dos clientes: {e}")
+
+# --- Spacy ---
+# Tenta carregar, se falhar (comum em serverless se não instalado certo), usa fallback simples
+try:
+    nlp_en = spacy.load("en_core_web_sm")
+    nlp_pt = spacy.load("pt_core_news_sm")
+    SPACY_AVAILABLE = True
+except Exception as e:
+    print(f"Spacy models não carregados: {e}")
+    SPACY_AVAILABLE = False
 
 # --- Funções Auxiliares ---
 def clean_title(title: str) -> str:
-    """Remove numeração do início dos títulos."""
     return re.sub(r'^\d+\.\s*', '', title).strip()
 
 def clean_query(query: str, lang: str = "en") -> str:
-    """Limpa e processa a query para melhorar a busca."""
+    if not SPACY_AVAILABLE:
+        return query # Fallback simples
+        
     nlp = nlp_en if lang == "en" else nlp_pt
     doc = nlp(query)
     tokens = [
@@ -140,15 +141,19 @@ class Query(BaseModel):
     query: str
     lang: str
 
+@app.get("/")
+def home():
+    return {"status": "Backend running", "docs": "/api/py/docs"}
+
 @app.post("/search", dependencies=[Depends(rate_limiter)])
 async def search(q: Query):
     cleaned_query = clean_query(q.query, lang=q.lang)
 
-    results = []
-    if q.lang == "pt":
-        results = vector_store_pt.similarity_search_with_relevance_scores(q.query, k=5)
-    else:
-        results = vector_store_en.similarity_search_with_relevance_scores(q.query, k=5)
+    # Escolha do Vector Store
+    vstore = vector_store_pt if q.lang == "pt" else vector_store_en
+    
+    # Busca
+    results = vstore.similarity_search_with_relevance_scores(q.query, k=5)
 
     threshold = 0.65
     filtered_results = [
@@ -156,10 +161,17 @@ async def search(q: Query):
         if (score >= threshold) and (doc.metadata.get("lang") == q.lang)
     ]
 
+    # Caminho corrigido para a pasta prompts (assume que prompts está DENTRO de src)
+    prompts_dir = CURRENT_DIR / "prompts"
+    
+    # Caso sem resultados
     if cleaned_query == "" or not filtered_results:
-        with open(f"../prompts/non_related_{q.lang}.txt", "r", encoding="utf-8") as file:
-            non_related_prompt = file.read()
-            return {"answer": non_related_prompt}
+        try:
+            prompt_file = prompts_dir / f"non_related_{q.lang}.txt"
+            with open(prompt_file, "r", encoding="utf-8") as file:
+                return {"answer": file.read()}
+        except FileNotFoundError:
+            return {"answer": "I don't have enough context to answer that based on the blog."}
 
     context = "\n\n".join(fr.page_content for fr in filtered_results)
     
@@ -169,21 +181,20 @@ async def search(q: Query):
     }
     sources = [{"title": title, "url": url} for title, url in unique_sources_set]
 
-    query = ""
-    context_info = ""
-    with open(f"../prompts/response_guidelines_{q.lang}.txt", "r", encoding="utf-8") as file:
-        prompt = file.read()
-
-    if q.lang == "pt":
-        query = "Pergunta"
-        context_info = "Contexto presente no blog de Gustavo sobre esse assunto"
-    else:
-        query = "Question"
-        context_info = "Existent context on Gustavo's blog related to this topic"
+    # Prepara prompt do chat
+    query_label = "Pergunta" if q.lang == "pt" else "Question"
+    context_label = "Contexto" if q.lang == "pt" else "Context"
+    
+    try:
+        guidelines_file = prompts_dir / f"response_guidelines_{q.lang}.txt"
+        with open(guidelines_file, "r", encoding="utf-8") as file:
+            system_prompt = file.read()
+    except FileNotFoundError:
+         system_prompt = "You are a helpful assistant answering based on the provided context."
 
     completion = await chat.ainvoke([
-        {"role": "system", "content": prompt},
-        {"role": "user", "content": f"{query}: {q.query}\n{context_info}:{context}",},
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": f"{query_label}: {q.query}\n{context_label}:{context}",},
     ])
 
     return {"answer": completion.content, "sources": sources}

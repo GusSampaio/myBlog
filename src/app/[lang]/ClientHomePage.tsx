@@ -6,47 +6,10 @@ import Link from "next/link";
 import { translations } from "@/lib/translations";
 import * as React from "react";
 
-// --- NOVO ---
-// Adicionando as novas traduções para as perguntas padrão e a mensagem de loading.
-// Você deve mover isso para seu arquivo `lib/translations.js` para manter a organização.
-const extendedTranslations = {
-    ...translations,
-    pt: {
-        ...translations.pt,
-        search: {
-            placeholder: "Pergunte sobre o blog...",
-            button: "Pesquisar",
-            loading: "Analisando os bits e bytes...",
-            answer: "Resposta:",
-            sources: "Referências:",
-            standardQuestions: [
-                "Qual a formação do Gustavo?",
-                "Me fale sobre a stack de MLOps",
-                "Como usar o Docker para projetos de IA?",
-            ]
-        }
-    },
-    en: {
-        ...translations.en,
-        search: {
-            placeholder: "Ask about the blog...",
-            button: "Search",
-            loading: "Analyzing the bits and bytes...",
-            answer: "Answer:",
-            sources: "Sources:",
-            standardQuestions: [
-                "What is Gustavo's background?",
-                "Tell me about the MLOps stack",
-                "How to use Docker for AI projects?",
-            ]
-        }
-    }
-};
-
 
 export default function ClientHomePage({ locale }: { locale: string }) {
     // Usando as traduções estendidas
-    const t = extendedTranslations[locale as keyof typeof extendedTranslations];
+    const t = translations[locale as keyof typeof translations];
 
     const [query, setQuery] = React.useState("");
     const [answer, setAnswer] = React.useState("");
@@ -65,8 +28,7 @@ export default function ClientHomePage({ locale }: { locale: string }) {
         setSources([]);
 
         try {
-            //const res = await fetch("https://meu-backend.onrender.com/search", {
-            const res = await fetch("http://localhost:8000/search", {
+            const res = await fetch("/api/py/search", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ query: searchQuery, lang: locale }),

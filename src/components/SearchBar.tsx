@@ -56,7 +56,7 @@ export function SearchBar({ language }: SearchBarProps) {
     }
   };
 
-  return (
+   return (
     <div>
       <Card className="w-full max-w-2xl mx-auto p-4">
         <form onSubmit={handleSearch} className="flex gap-2">
@@ -64,13 +64,14 @@ export function SearchBar({ language }: SearchBarProps) {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <Input
               type="text"
+              placeholder={translations.search.placeholder}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-10"
             />
           </div>
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? translations.funcs.searching : translations.funcs.searching}
+            {isLoading ? translations.search.loading : translations.search.button}
           </Button>
         </form>
       </Card>

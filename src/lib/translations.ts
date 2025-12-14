@@ -39,10 +39,18 @@ export const translations = {
     experience:{
       title:"Experience"
     },
-    funcs:{
-      search:"Search",
-      searching:"Searching"
-    }    
+    search: {
+      placeholder: "Ask about the blog...",
+      button: "Search",
+      loading: "Analyzing the bits and bytes...",
+      answer: "Answer:",
+      sources: "Sources:",
+      standardQuestions: [
+          "What is Gustavo's background?",
+          "Tell me about the MLOps stack",
+          "How to use Docker for AI projects?",
+      ]
+    }
   },
   pt: {
     title: "Prazer, Gustavo :)",
@@ -84,9 +92,17 @@ export const translations = {
     experience:{
       title: "Experiência"
     },
-    funcs:{
-      search:"Pesquisar",
-      searching:"Pesquisando"
-    } 
+    search: {
+      placeholder: "Pergunte sobre o blog...",
+      button: "Pesquisar",
+      loading: "Analisando os bits e bytes...",
+      answer: "Resposta:",
+      sources: "Referências:",
+      standardQuestions: [
+          "Qual a formação do Gustavo?",
+          "Me fale sobre a stack de MLOps",
+          "Como usar o Docker para projetos de IA?",
+      ]
+    }
   }
 }; 
