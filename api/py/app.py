@@ -42,8 +42,8 @@ EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 CHAT_MODEL = "mistral-small"
 
 # --- Inicialização do FastAPI ---
-# root_path ajuda o FastAPI a entender que ele está rodando atrás de um proxy (/api/py)
 app = FastAPI(docs_url="/docs", openapi_url="/openapi.json", root_path="/api/py")
+
 
 # Configuração CORS (Permitindo tudo para evitar bloqueios na Vercel)
 app.add_middleware(
