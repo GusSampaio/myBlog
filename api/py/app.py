@@ -6,7 +6,6 @@ from langchain_huggingface import HuggingFaceEndpointEmbeddings
 from langchain_mongodb import MongoDBAtlasVectorSearch
 from dotenv import load_dotenv
 from fastapi.middleware.cors import CORSMiddleware
-import spacy
 import os
 import re
 import time
@@ -18,7 +17,7 @@ from pathlib import Path
 # Detecta a pasta onde este arquivo app.py está rodando
 CURRENT_DIR = Path(__file__).parent
 
-# Tenta carregar .env apenas se existir (Local), na Vercel as vars vêm do painel
+# Para ambiente virtual local
 dotenv_path = CURRENT_DIR.parent.parent / ".env"
 if dotenv_path.exists():
     load_dotenv(dotenv_path=str(dotenv_path))
@@ -54,7 +53,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- Rate Limiter (Nota: Em Serverless, isso reseta a cada cold boot) ---
+# --- Rate Limiter ---
 request_tracker = defaultdict(lambda: {"count": 0, "last_request_time": 0.0})
 lock = asyncio.Lock()
 
@@ -84,7 +83,6 @@ async def rate_limiter(request: Request):
         await asyncio.sleep(delay)
 
 # --- Conexões Globais ---
-# Em serverless, conexões fora das funções podem ser reutilizadas se o container estiver "quente"
 try:
     client = MongoClient(MONGODB_URI)
     collection = client[MONGODB_DATABASE][MONGODB_COLLECTION]
@@ -111,31 +109,16 @@ try:
 except Exception as e:
     print(f"Erro na inicialização dos clientes: {e}")
 
-# --- Spacy ---
-# Tenta carregar, se falhar (comum em serverless se não instalado certo), usa fallback simples
-try:
-    nlp_en = spacy.load("en_core_web_sm")
-    nlp_pt = spacy.load("pt_core_news_sm")
-    SPACY_AVAILABLE = True
-except Exception as e:
-    print(f"Spacy models não carregados: {e}")
-    SPACY_AVAILABLE = False
-
 # --- Funções Auxiliares ---
 def clean_title(title: str) -> str:
     return re.sub(r'^\d+\.\s*', '', title).strip()
 
 def clean_query(query: str, lang: str = "en") -> str:
-    if not SPACY_AVAILABLE:
-        return query # Fallback simples
-        
-    nlp = nlp_en if lang == "en" else nlp_pt
-    doc = nlp(query)
-    tokens = [
-        token.lemma_ for token in doc
-        if not token.is_stop and token.pos_ in ("NOUN", "ADJ", "VERB")
-    ]
-    return " ".join(tokens)
+    # Remove pontuação básica
+    text = re.sub(r'[^\w\s]', '', query)
+    # Remove espaços duplos
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
 
 class Query(BaseModel):
     query: str
