@@ -1,5 +1,4 @@
 # dependencies
-/src/venv
 /src/backend/__pycache__
 /node_modules
 /.pnp
@@ -9,8 +8,8 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-/backend/src/venv/
-/backend/src/__pycache__/
+*venv/
+*__pycache__/
 
 # testing
 /coverage

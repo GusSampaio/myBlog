@@ -41,7 +41,7 @@ EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 CHAT_MODEL = "mistral-small"
 
 # --- Inicialização do FastAPI ---
-app = FastAPI(docs_url="/docs", openapi_url="/openapi.json", root_path="/api/py")
+app = FastAPI(docs_url="/api/py/docs", openapi_url="/api/py/openapi.json")
 
 
 # Configuração CORS (Permitindo tudo para evitar bloqueios na Vercel)
@@ -128,7 +128,7 @@ class Query(BaseModel):
 def home():
     return {"status": "Backend running", "docs": "/api/py/docs"}
 
-@app.post("/search", dependencies=[Depends(rate_limiter)])
+@app.post("/api/py/search", dependencies=[Depends(rate_limiter)])
 async def search(q: Query):
     cleaned_query = clean_query(q.query, lang=q.lang)
 
