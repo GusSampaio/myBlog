@@ -9,9 +9,6 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "sync-notion": "tsx src/scripts/sync-notion.ts",
-    "sync-notion:all": "tsx src/scripts/sync-notion.ts --all",
-    "setup-translation": "bash setup-translation.sh",
     "sync-notion-hic": "tsx src/scripts/sync-notion-hic.ts"
   },
   "dependencies": {
